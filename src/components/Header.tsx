@@ -1,47 +1,65 @@
 import React from 'react';
-import { ShoppingBag, Heart, Search, Menu } from 'lucide-react';
+import { ShoppingCart, Heart, Menu } from 'lucide-react';
+import PopButton from './PopButton';
 
-const Header = () => {
+interface HeaderProps {
+  cartCount: number;
+  favoriteCount: number;
+  onCartClick: () => void;
+  onFavoriteClick: () => void;
+}
+
+const Header = ({ cartCount, favoriteCount, onCartClick, onFavoriteClick }: HeaderProps) => {
   return (
-    <header className="relative z-50 bg-white border-b-8 border-black">
-      <div className="halftone-bg h-2"></div>
-      
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full border-4 border-black flex items-center justify-center">
-              <span className="text-white font-bold text-xl">P</span>
+    <header className="relative overflow-hidden">
+      <div className="bg-pop-orange polka-dots border-b-8 border-black">
+        <div className="container mx-auto px-4 py-6">
+          <nav className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="text-4xl font-handwritten font-bold text-white text-pop-shadow wiggle">
+                POP! 🎨
+              </div>
+              <div className="comic-bubble hidden md:block">
+                <span className="font-comic text-lg font-bold">超酷潮流店！</span>
+              </div>
             </div>
-            <h1 className="text-3xl font-bold pop-title">POP SHOP</h1>
-          </div>
-
-          {/* Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {['Home', 'Fashion', 'Art', 'Sale'].map((item) => (
-              <a
-                key={item}
-                href="#"
-                className="text-xl font-bold text-black hover:text-orange-500 transition-colors duration-300 font-['Comic_Neue'] relative"
-              >
-                {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-1 bg-pink-500 transition-all duration-300 hover:w-full"></span>
-              </a>
-            ))}
+            
+            <div className="flex items-center space-x-4">
+              {/* Mobile menu button */}
+              <button className="md:hidden btn-pop p-2">
+                <Menu className="w-5 h-5" />
+              </button>
+              
+              {/* Desktop navigation */}
+              <div className="hidden md:flex items-center space-x-4">
+                <button 
+                  onClick={onFavoriteClick}
+                  className="relative btn-pop font-handwritten px-4 py-2 rounded-xl"
+                >
+                  <Heart className="w-5 h-5 inline mr-2" />
+                  收藏
+                  {favoriteCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-pink-500 to-pink-400 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold border-2 border-white">
+                      {favoriteCount}
+                    </span>
+                  )}
+                </button>
+                
+                <button 
+                  onClick={onCartClick}
+                  className="relative btn-pop btn-pop-pink font-handwritten px-4 py-2 rounded-xl"
+                >
+                  <ShoppingCart className="w-5 h-5 inline mr-2" />
+                  购物车
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold border-2 border-white bounce-fun">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
           </nav>
-
-          {/* ActionButtons */}
-          <div className="flex items-center space-x-4">
-            <button className="p-3 border-4 border-black bg-yellow-400 rounded-full hover:animate-bounce transition-all duration-300">
-              <Search size={20} className="text-black" />
-            </button>
-            <button className="p-3 border-4 border-black bg-pink-400 rounded-full hover:animate-bounce transition-all duration-300">
-              <Heart size={20} className="text-black" />
-            </button>
-            <button className="p-3 border-4 border-black bg-orange-400 rounded-full hover:animate-bounce transition-all duration-300">
-              <ShoppingBag size={20} className="text-black" />
-            </button>
-          </div>
         </div>
       </div>
     </header>
