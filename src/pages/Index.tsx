@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Header from '../components/Header';
-import HeroSection from '../components/HeroSection';
-import ProductCard from '../components/ProductCard';
-import PopButton from '../components/PopButton';
-import { products, Product } from '../data/products';
+import { ShoppingCart, Heart, Star, Zap, Sparkles } from 'lucide-react';
+import ShoppingCartComponent from '../components/ShoppingCart';
+
+interface Product {
+  id: number;
+  name: string;
+  price: string;
+  image: string;
+  tag: string;
+  rating: number;
+}
 
 interface CartItem extends Product {
   quantity: number;
@@ -16,25 +20,63 @@ const Index = () => {
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  const products: Product[] = [
+    {
+      id: 1,
+      name: "霓虹街头T恤",
+      price: "¥299",
+      image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop",
+      tag: "HOT!",
+      rating: 5
+    },
+    {
+      id: 2,
+      name: "波普艺术卫衣",
+      price: "¥599",
+      image: "https://images.unsplash.com/photo-1556821840-3a9fbc86dcd5?w=300&h=300&fit=crop",
+      tag: "NEW",
+      rating: 4
+    },
+    {
+      id: 3,
+      name: "复古波点裙",
+      price: "¥399",
+      image: "https://images.unsplash.com/photo-1549062572-544a64fb0c56?w=300&h=300&fit=crop",
+      tag: "SALE",
+      rating: 5
+    },
+    {
+      id: 4,
+      name: "涂鸦风夹克",
+      price: "¥799",
+      image: "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=300&h=300&fit=crop",
+      tag: "LIMITED",
+      rating: 4
+    }
+  ];
+
   const addToCart = (product: Product) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
+      
       if (existingItem) {
+        // If item exists, increase quantity
         return prevCart.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
+      } else {
+        // If item doesn't exist, add new item with quantity 1
+        return [...prevCart, { ...product, quantity: 1 }];
       }
-      return [...prevCart, { ...product, quantity: 1 }];
     });
+    
+    // Show cart after adding item
+    setIsCartOpen(true);
   };
 
   const updateQuantity = (id: number, quantity: number) => {
-    if (quantity === 0) {
-      removeFromCart(id);
-      return;
-    }
     setCart(prevCart =>
       prevCart.map(item =>
         item.id === id ? { ...item, quantity } : item
@@ -42,8 +84,12 @@ const Index = () => {
     );
   };
 
-  const removeFromCart = (id: number) => {
+  const removeItem = (id: number) => {
     setCart(prevCart => prevCart.filter(item => item.id !== id));
+  };
+
+  const clearCart = () => {
+    setCart([]);
   };
 
   const toggleFavorite = (productId: number) => {
@@ -56,27 +102,93 @@ const Index = () => {
     setFavorites(newFavorites);
   };
 
-  const getTotalPrice = () => {
-    return cart.reduce((total, item) => {
-      const price = parseFloat(item.price.replace('¥', ''));
-      return total + (price * item.quantity);
-    }, 0);
-  };
-
-  const getTotalItems = () => {
+  const getTotalCartItems = () => {
     return cart.reduce((total, item) => total + item.quantity, 0);
   };
 
   return (
     <div className="min-h-screen bg-pop-gradient polka-dots-large">
-      <Header 
-        cartCount={getTotalItems()}
-        favoriteCount={favorites.size}
-        onCartClick={() => setIsCartOpen(true)}
-        onFavoriteClick={() => {}} // TODO: Implement favorites view
+      {/* Shopping Cart Component */}
+      <ShoppingCartComponent
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cart}
+        updateQuantity={updateQuantity}
+        removeItem={removeItem}
+        clearCart={clearCart}
       />
 
-      <HeroSection />
+      {/* Header */}
+      <header className="relative overflow-hidden">
+        <div className="bg-pop-orange polka-dots border-b-8 border-black">
+          <div className="container mx-auto px-4 py-6">
+            <nav className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="text-4xl font-handwritten font-bold text-white text-pop-shadow wiggle">
+                  POP! 🎨
+                </div>
+                <div className="comic-bubble hidden md:block">
+                  <span className="font-comic text-lg font-bold">超酷潮流店！</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-6">
+                <button className="relative btn-pop font-handwritten px-4 py-2 rounded-xl">
+                  <Heart className="w-5 h-5 inline mr-2" />
+                  收藏
+                  {favorites.size > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-pop-pink text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold border-2 border-white">
+                      {favorites.size}
+                    </span>
+                  )}
+                </button>
+                
+                <button 
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative btn-pop btn-pop-pink font-handwritten px-4 py-2 rounded-xl hover:shake"
+                >
+                  <ShoppingCart className="w-5 h-5 inline mr-2" />
+                  购物车
+                  {getTotalCartItems() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold border-2 border-white bounce-fun">
+                      {getTotalCartItems()}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative py-20 overflow-hidden">
+        <div className="container mx-auto px-4 text-center">
+          <div className="relative inline-block">
+            <h1 className="text-6xl md:text-8xl font-handwritten font-bold text-white text-3d mb-6 float">
+              MEGA SALE!
+            </h1>
+            <div className="absolute -top-4 -right-4 text-6xl animate-spin">⚡</div>
+            <div className="absolute -bottom-4 -left-4 text-4xl bounce-fun">✨</div>
+          </div>
+          
+          <div className="comic-bubble inline-block mb-8">
+            <p className="text-2xl font-comic font-bold text-black">
+              复古波普风格 · 独特设计 · 限时特惠！
+            </p>
+          </div>
+          
+          <button className="btn-pop btn-pop-pink font-handwritten text-2xl px-12 py-4 rounded-3xl hover:shake">
+            <Zap className="w-8 h-8 inline mr-3" />
+            立即抢购！
+          </button>
+        </div>
+        
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 text-6xl text-orange-400 float animation-delay-100">🎨</div>
+        <div className="absolute top-32 right-20 text-4xl text-pink-400 wiggle animation-delay-200">✨</div>
+        <div className="absolute bottom-20 left-20 text-5xl text-yellow-400 bounce-fun animation-delay-300">⭐</div>
+      </section>
 
       {/* Products Section */}
       <section className="py-16">
@@ -92,13 +204,69 @@ const Index = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {products.map((product, index) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={addToCart}
-                onToggleFavorite={toggleFavorite}
-                isFavorited={favorites.has(product.id)}
-              />
+              <div key={product.id} className="relative">
+                <div className="product-card starburst" style={{animationDelay: `${index * 0.1}s`}}>
+                  {/* Product Tag */}
+                  <div className="absolute -top-3 -right-3 z-10">
+                    <div className="bg-pop-pink font-handwritten font-bold text-white px-3 py-1 rounded-full border-2 border-black transform rotate-12 bounce-fun">
+                      {product.tag}
+                    </div>
+                  </div>
+                  
+                  {/* Product Image */}
+                  <div className="pop-frame mb-4 overflow-hidden rounded-lg">
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="w-full h-48 object-cover hover:scale-110 transition-transform duration-300"
+                    />
+                  </div>
+                  
+                  {/* Product Info */}
+                  <div className="p-4">
+                    <h3 className="font-handwritten text-xl font-bold text-black mb-2">
+                      {product.name}
+                    </h3>
+                    
+                    {/* Rating */}
+                    <div className="flex items-center mb-3">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`w-4 h-4 ${i < product.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                        />
+                      ))}
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-handwritten font-bold text-pop-pink">
+                        {product.price}
+                      </span>
+                      
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => toggleFavorite(product.id)}
+                          className={`p-2 rounded-lg border-2 border-black transition-all ${
+                            favorites.has(product.id) 
+                              ? 'bg-pink-500 text-white bounce-fun' 
+                              : 'bg-white text-black hover:bg-pink-100 hover:wiggle'
+                          }`}
+                        >
+                          <Heart className="w-4 h-4" />
+                        </button>
+                        
+                        <button 
+                          onClick={() => addToCart(product)}
+                          className="btn-pop font-handwritten px-4 py-2 rounded-lg text-sm hover:bounce-fun"
+                        >
+                          <Sparkles className="w-4 h-4 inline mr-1" />
+                          加入购物车
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -156,141 +324,6 @@ const Index = () => {
           </p>
         </div>
       </footer>
-
-      {/* Cart Drawer */}
-      <AnimatePresence>
-        {isCartOpen && (
-          <>
-            <motion.div
-              className="cart-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsCartOpen(false)}
-            />
-            <motion.div
-              className="cart-drawer"
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
-            >
-              <div className="p-6 border-b-4 border-black bg-pop-orange">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-handwritten font-bold text-white text-shadow-pop">
-                    🛒 购物车
-                  </h2>
-                  <button
-                    onClick={() => setIsCartOpen(false)}
-                    className="p-2 bg-white rounded-lg border-4 border-black hover:bg-gray-100 transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex-1 p-6">
-                {cart.length === 0 ? (
-                  <div className="text-center py-12">
-                    <ShoppingBag className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                    <p className="font-handwritten text-xl text-gray-600 mb-4">购物车空空如也</p>
-                    <p className="font-comic text-gray-500">快去添加一些心爱的商品吧！</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {cart.map((item) => (
-                      <motion.div
-                        key={item.id}
-                        className="flex items-center space-x-4 p-4 border-4 border-black rounded-lg bg-white"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-16 h-16 object-cover rounded-lg border-2 border-black"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-handwritten font-bold text-lg">{item.name}</h4>
-                          <p className="font-comic text-sm text-gray-600">{item.category}</p>
-                          <p className="font-handwritten font-bold text-orange-500">{item.price}</p>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="quantity-control">
-                            <button
-                              className="quantity-btn rounded-l-md"
-                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
-                            <input
-                              type="number"
-                              value={item.quantity}
-                              onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
-                              className="quantity-input"
-                              min="1"
-                            />
-                            <button
-                              className="quantity-btn rounded-r-md"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
-                          </div>
-                          <button
-                            onClick={() => removeFromCart(item.id)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {cart.length > 0 && (
-                <div className="p-6 border-t-4 border-black bg-gray-50">
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-handwritten text-lg">总计:</span>
-                      <span className="font-handwritten text-2xl font-bold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent">
-                        ¥{getTotalPrice().toFixed(2)}
-                      </span>
-                    </div>
-                    <p className="font-comic text-sm text-gray-600">
-                      共 {getTotalItems()} 件商品
-                    </p>
-                  </div>
-                  
-                  <PopButton
-                    variant="pink"
-                    size="lg"
-                    className="w-full mb-2"
-                    onClick={() => {
-                      alert('跳转到结账页面！');
-                      setIsCartOpen(false);
-                    }}
-                  >
-                    💳 立即结账
-                  </PopButton>
-                  
-                  <PopButton
-                    variant="secondary"
-                    size="md"
-                    className="w-full"
-                    onClick={() => setIsCartOpen(false)}
-                  >
-                    继续购物
-                  </PopButton>
-                </div>
-              )}
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   );
 };
